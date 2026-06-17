@@ -1,0 +1,53 @@
+<div id="encefalomalacia-tac-form-backend"></div>
+<script>
+const API_ENCEFALO_TAC = "https://TU-SERVICIO.onrender.com"; // cambia esto por tu URL de Render
+
+async function llamarBackendEncefaloTAC(payload) {
+  const res = await fetch(`${API_ENCEFALO_TAC}/generar/encefalomalacia-tac`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error((data.errores || []).join(", ") || "Error generando texto");
+  return data;
+}
+
+function escribirEnBubbleInputEncefaloTAC(id, texto) {
+  const el = document.getElementById(id);
+  if (!el) return false;
+  const input = (el.tagName === "TEXTAREA" || el.tagName === "INPUT") ? el : el.querySelector("textarea, input");
+  if (!input) return false;
+  input.value = texto;
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+  input.dispatchEvent(new Event("change", { bubbles: true }));
+  return true;
+}
+
+async function generarTextoEncefaloTACDesdeBackend() {
+  const payload = {
+    tipo_encefalomalacia: document.getElementById("tipo_encefalomalacia_tac")?.value || "",
+    uh: document.getElementById("uh_encefalo_tac")?.value || "",
+    medidas: document.getElementById("medidas_encefalo_tac")?.value || "",
+    localizaciones: Array.from(document.querySelectorAll(".encefalo-loc-row")).map(row => ({
+      localizacion: row.querySelector(".loc-encefalo-tac-select")?.value || "",
+      lado: row.querySelector(".lado-encefalo-tac-select")?.value || ""
+    })).filter(x => x.localizacion || x.lado),
+    traccion_ventricular: document.getElementById("traccion_ventricular_tac")?.value || "",
+    lado_traccion_ventricular: document.getElementById("lado_traccion_ventricular_tac")?.value || "",
+    gliosis: document.getElementById("gliosis_tac")?.value || "",
+    observaciones: document.getElementById("observaciones_encefalo_tac")?.value || ""
+  };
+
+  const data = await llamarBackendEncefaloTAC(payload);
+  document.getElementById("editor-descripcion-encefalo-tac").innerText = data.descripcion;
+  document.getElementById("editor-conclusion-encefalo-tac").innerText = data.conclusion;
+  escribirEnBubbleInputEncefaloTAC("input-descripcion-encefalo-tac", data.descripcion);
+  escribirEnBubbleInputEncefaloTAC("input-conclusion-encefalo-tac", data.conclusion);
+  escribirEnBubbleInputEncefaloTAC("input-json-encefalo-tac", data.textoFinal);
+  return data;
+}
+
+window.generarTextoEncefaloTAC = generarTextoEncefaloTACDesdeBackend;
+window.generarJSON_Encefalo_TAC = generarTextoEncefaloTACDesdeBackend;
+</script>
