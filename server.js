@@ -606,16 +606,13 @@ function compactarGrupoLateralEncefaloTAC(items, lado) {
 }
 function textoLocalizacionesEncefaloTAC(locs) {
   if (!locs.length) return "";
+
   const agrupadas = agruparLocalizacionesEncefaloTAC(locs);
-  const derechos = agrupadas.filter(item => item.lado === "Derecho");
-  const izquierdos = agrupadas.filter(item => item.lado === "Izquierdo");
-  const ipsilaterales = agrupadas.filter(item => item.lado === "Ipsilateral");
-  const resto = agrupadas.filter(item => !["Derecho", "Izquierdo", "Ipsilateral"].includes(item.lado));
-  const textos = [];
-  if (derechos.length > 1) textos.push(compactarGrupoLateralEncefaloTAC(derechos, "Derecho")); else if (derechos.length === 1) textos.push(textoLocalizacionIndividualEncefaloTAC(derechos[0]));
-  if (izquierdos.length > 1) textos.push(compactarGrupoLateralEncefaloTAC(izquierdos, "Izquierdo")); else if (izquierdos.length === 1) textos.push(textoLocalizacionIndividualEncefaloTAC(izquierdos[0]));
-  if (ipsilaterales.length > 1) textos.push(compactarGrupoLateralEncefaloTAC(ipsilaterales, "Ipsilateral")); else if (ipsilaterales.length === 1) textos.push(textoLocalizacionIndividualEncefaloTAC(ipsilaterales[0]));
-  textos.push(...resto.map(textoLocalizacionIndividualEncefaloTAC));
+
+  const textos = agrupadas.map(item => {
+    return textoLocalizacionIndividualEncefaloTAC(item);
+  });
+
   return unirListaEncefaloTAC(textos.filter(Boolean));
 }
 function esMultipleEncefaloTAC(payload) { return (payload.localizaciones || []).length > 1 || payload.tipo_encefalomalacia === "Múltiples áreas de encefalomalacia"; }
