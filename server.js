@@ -662,26 +662,61 @@ function validarPayload(p) {
   if (hayTraccion && (!p.lado_traccion_ventricular || p.lado_traccion_ventricular === "No especificar")) errores.push("lado_traccion_ventricular");
   return errores;
 }
+function valorLimpioEncefaloTAC(valor) {
+  if (valor === null || valor === undefined) return "";
+  const txt = String(valor).trim();
+  if (!txt) return "";
+  if (txt.toLowerCase() === "null") return "";
+  if (txt.toLowerCase() === "undefined") return "";
+  return txt;
+}
+
 function generarDescripcionEncefaloTAC(p) {
   const multiple = esMultipleEncefaloTAC(p);
   const loc = textoLocalizacionesEncefaloTAC(p.localizaciones || []);
   const objeto = construirObjetoEncefaloTAC(p.tipo_encefalomalacia, multiple);
   const morfologia = textoMorfologiaBaseEncefaloTAC(multiple);
-  const uhTexto = textoUHEencefaloTAC((p.uh || "").trim());
-  const inicio = multiple ? randomEncefaloTAC(["Se identifican", "Se observan", "Se evidencian", "Se documentan", "Se aprecian", "Se advierten", "Se reconocen", "Se detectan", "Se constatan", "Se distinguen", "Se ponen de manifiesto"])
-                          : randomEncefaloTAC(["Se identifica", "Se observa", "Se evidencia", "Se documenta", "Se aprecia", "Se advierte", "Se reconoce", "Se detecta", "Se constata", "Se distingue", "Se pone de manifiesto"]);
+
+  const uh = valorLimpioEncefaloTAC(p.uh);
+  const medidas = valorLimpioEncefaloTAC(p.medidas);
+  const observaciones = valorLimpioEncefaloTAC(p.observaciones);
+
+  const uhTexto = textoUHEencefaloTAC(uh);
+
+  const inicio = multiple
+    ? randomEncefaloTAC(["Se identifican", "Se observan", "Se evidencian", "Se documentan", "Se aprecian", "Se advierten", "Se reconocen", "Se detectan", "Se constatan", "Se distinguen", "Se ponen de manifiesto"])
+    : randomEncefaloTAC(["Se identifica", "Se observa", "Se evidencia", "Se documenta", "Se aprecia", "Se advierte", "Se reconoce", "Se detecta", "Se constata", "Se distingue", "Se pone de manifiesto"]);
+
   let texto = `${inicio} ${objeto}`;
+
   if (loc) texto += ` ${loc}`;
   texto += `, ${morfologia}`;
-  const datos = []; if (uhTexto) datos.push(uhTexto); if (p.medidas) datos.push(`con medidas aproximadas de ${p.medidas}`);
+
+  const datos = [];
+  if (uhTexto) datos.push(uhTexto);
+  if (medidas) datos.push(`con medidas aproximadas de ${medidas}`);
+
   if (datos.length) texto += `, ${unirExtrasEncefaloTAC(datos)}`;
+
   const extras = [];
-  const traccionTexto = textoTraccionVentricularEncefaloTAC(p.traccion_ventricular, p.lado_traccion_ventricular);
-  const gliosisTexto = textoCampoAsociadoEncefaloTAC(p.gliosis, "Sin cambios glióticos evidentes");
-  if (traccionTexto) extras.push(traccionTexto); if (gliosisTexto) extras.push(gliosisTexto);
-  if (extras.length) texto += `. ${unirExtrasEncefaloTAC(extras)}`;
+  const traccionTexto = textoTraccionVentricularEncefaloTAC(
+    p.traccion_ventricular,
+    p.lado_traccion_ventricular
+  );
+  const gliosisTexto = textoCampoAsociadoEncefaloTAC(
+    p.gliosis,
+    "Sin cambios glióticos evidentes"
+  );
+
+  if (traccionTexto) extras.push(traccionTexto);
+  if (gliosisTexto) extras.push(gliosisTexto);
+
+  if (extras.length) texto += `, ${unirExtrasEncefaloTAC(extras)}`;
+
   texto += ".";
-  if (p.observaciones) texto += ` ${p.observaciones}`;
+
+  if (observaciones) texto += ` ${observaciones}`;
+
   return limpiarPuntuacionEncefaloTAC(texto);
 }
 function generarConclusionEncefaloTAC(p) {
