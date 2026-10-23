@@ -1,7 +1,9 @@
+const riLexical=require('./seleccionLexica');
 const express = require("express");
 const cors = require("cors");
 
 const app = express();
+app.use((_req,_res,next)=>riLexical.run(next));
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
 
@@ -533,7 +535,7 @@ const reglasLocalizacionEncefaloTAC = {
 };
 
 function randomEncefaloTAC(lista) {
-  return lista[Math.floor(Math.random() * lista.length)];
+  return riLexical.choose(lista,Math.floor(Math.random() * lista.length));
 }
 function normalizarLocEncefaloTAC(txt) { return (txt || "").toLowerCase().trim(); }
 function unirListaEncefaloTAC(lista) {
@@ -745,3 +747,5 @@ ${conclusion}` });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor activo en puerto ${PORT}`));
+
+module.exports=riLexical.wrapExports(module.exports);
